@@ -241,6 +241,17 @@ services:
     # - CMA_RADARR_ENCODED_API_KEY=${CMA_RADARR_ENCODED_API_KEY:-""}
     # - CMA_RADARR_ENABLE_NOTIFICATION=${CMA_RADARR_ENABLE_NOTIFICATION:-""}
 
+  flaresolverr:
+    container_name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    ports:
+      - 8191:8191
+    environment:
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    networks:
+      - mynetwork
+
 volumes:
   torrent-downloads:
   radarr-config:
