@@ -130,6 +130,23 @@ services:
       - 8989:8989
     restart: unless-stopped
 
+  bazarr:
+    profiles: ["vpn", "no-vpn"]
+    container_name: bazarr
+    image: lscr.io/linuxserver/bazarr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - bazarr-config:/config
+      - torrent-downloads:/downloads
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+    networks:
+      - mynetwork
+
   prowlarr:
     profiles: ["vpn", "no-vpn"]
     container_name: prowlarr
@@ -261,6 +278,7 @@ volumes:
   qbittorrent-config:
   jellyseerr-config:
   recommendarr-data:
+  bazarr-config:
   # cleanmyarr-config:
 
 networks:
