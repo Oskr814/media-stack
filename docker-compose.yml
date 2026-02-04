@@ -10,6 +10,12 @@ services:
     image: qmcgaw/gluetun:v3.40.3
     cap_add:
       - NET_ADMIN
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--tries=1", "-O-", "http://127.0.0.1:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-nordvpn} # Valid values: nordvpn, expressvpn, protonvpn, surfshark or custom
       - OPENVPN_USER=${OPENVPN_USER:-""}
@@ -73,14 +79,19 @@ services:
 
     # Unomment below line if vpn is enabled
     # network_mode: service:vpn
-
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:5080/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
       - WEBUI_PORT=5080
     volumes:
-      - qbittorrent-config:/config
+      - ./config/qbittorrent:/config
       - /mnt/media/data:/data
 
     ## Comment/Disable below ports if VPN is enabled
@@ -99,6 +110,12 @@ services:
     ## Uncomment below lines if VPN is enabled
     #   mynetwork:
     #     ipv4_address: ${RADARR_STATIC_CONTAINER_IP} # It should be available IPv4 address in range of docker network `mynetwork` e.g. 172.20.0.2
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:7878/ping >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
@@ -106,7 +123,7 @@ services:
     ports:
       - 7878:7878
     volumes:
-      - radarr-config:/config
+      - ./config/radarr:/config
       - /mnt/media/data:/data
     restart: "unless-stopped"
 
@@ -119,12 +136,18 @@ services:
     ## Uncomment below lines if VPN is enabled
     #   mynetwork:
     #     ipv4_address: ${SONARR_STATIC_CONTAINER_IP} # It should be available IPv4 address in range of docker network `mynetwork` e.g. 172.20.0.2
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8989/ping >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
     volumes:
-      - sonarr-config:/config
+      - ./config/sonarr:/config
       - /mnt/media/data:/data
     ports:
       - 8989:8989
@@ -134,13 +157,19 @@ services:
     profiles: ["vpn", "no-vpn"]
     container_name: bazarr
     image: lscr.io/linuxserver/bazarr:latest
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:6767/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
     volumes:
-      - bazarr-config:/config
-      - torrent-downloads:/downloads
+      - ./config/bazarr:/config
+      - /mnt/media/data:/downloads
     ports:
       - 6767:6767
     restart: unless-stopped
@@ -160,12 +189,18 @@ services:
 
     networks:               # Comment this line if vpn is enabled
       - mynetwork           # Comment this line if vpn is enabled
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:9696/ping >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
     volumes:
-      - prowlarr-config:/config
+      - ./config/prowlarr:/config
 
     # Comment below ports if VPN is enabled.
     ports:
@@ -178,13 +213,21 @@ services:
     image: tannermiddleton/recommendarr:v1.4.4
     networks:
       - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
+      - PUID=1000
+      - PGID=1000
       - NODE_ENV=production
       - DOCKER_ENV=true
       - PORT=3000
       - PUBLIC_URL=https://localhost:3000 # Change this public URL if you are accessing recommendarr on a domain
     volumes:
-      - recommendarr-data:/app/server/data
+      - ./config/recommendarr:/app/server/data
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -195,12 +238,18 @@ services:
     container_name: jellyseerr
     networks:
       - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:5055/api/v1/status >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
     volumes:
-      - jellyseerr-config:/app/config
+      - ./config/jellyseerr:/app/config
     ports:
       - 5055:5055
     restart: unless-stopped
@@ -211,12 +260,18 @@ services:
     container_name: jellyfin
     networks:
       - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8096/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
     volumes:
-      - jellyfin-config:/config
+      - ./config/jellyfin:/config
       - /mnt/media/data/media:/data
     devices:
       - /dev/dri:/dev/dri
@@ -238,7 +293,7 @@ services:
   #   networks:
   #     - mynetwork
   #   volumes:
-  #     - cleanmyarr-config:/config
+  #     - ./config/cleanmyarr:/config
     # restart: unless-stopped
     # environment:
     # - CMA_MAINTENANCE_CYCLE=${CMA_MAINTENANCE_CYCLE:-""}
@@ -263,23 +318,58 @@ services:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     ports:
       - 8191:8191
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8191/health >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
+      - PUID=1000
+      - PGID=1000
       - LOG_LEVEL=info
     restart: unless-stopped
     networks:
       - mynetwork
 
-volumes:
-  torrent-downloads:
-  radarr-config:
-  sonarr-config:
-  prowlarr-config:
-  jellyfin-config:
-  qbittorrent-config:
-  jellyseerr-config:
-  recommendarr-data:
-  bazarr-config:
-  # cleanmyarr-config:
+  beszel:
+    container_name: beszel
+    image: henrygd/beszel
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8090/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./beszel_data:/beszel_data
+      - ./beszel_socket:/beszel_socket
+    ports:
+      - 8090:8090
+
+  beszel-agent:
+    container_name: beszel-agent
+    image: henrygd/beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "test", "-S", "/beszel_socket/beszel.sock"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - LISTEN=${BESZEL_AGENT_LISTEN}
+      - HUB_URL=${BESZEL_AGENT_HUB_URL}
+      - TOKEN=${BESZEL_AGENT_TOKEN}
+      - KEY=${BESZEL_AGENT_KEY}
+    volumes:
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      - ./beszel_socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 networks:
   mynetwork:
