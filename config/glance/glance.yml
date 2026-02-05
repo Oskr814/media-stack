@@ -43,6 +43,9 @@ pages:
                   - title: Beszel
                     description: System Monitoring
                     url: http://192.168.0.50:8090
+                  - title: Portainer
+                    description: Docker Management
+                    url: http://192.168.0.50:9000
 
   # Add more pages here:
   # - name: Your page name
