@@ -201,6 +201,7 @@ Here's a quick reference for all services in the stack:
 | Service | Port | URL | Description |
 |---------|------|-----|-------------|
 | Glance | 8080 | http://localhost:8080 | Dashboard with service bookmarks |
+| Dozzle | 8081 | http://localhost:8081 | Docker log viewer |
 | Jellyfin | 8096 | http://localhost:8096 | Media streaming server |
 | Radarr | 7878 | http://localhost:7878 | Movie management |
 | Sonarr | 8989 | http://localhost:8989 | TV show management |
