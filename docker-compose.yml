@@ -332,45 +332,6 @@ services:
     networks:
       - mynetwork
 
-  beszel:
-    container_name: beszel
-    image: henrygd/beszel
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:8090/ >/dev/null 2>&1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    volumes:
-      - ./beszel_data:/beszel_data
-      - ./beszel_socket:/beszel_socket
-    ports:
-      - 8090:8090
-
-  beszel-agent:
-    container_name: beszel-agent
-    image: henrygd/beszel-agent
-    restart: unless-stopped
-    network_mode: host
-    env_file:
-      - .env
-    healthcheck:
-      test: ["CMD", "test", "-S", "/beszel_socket/beszel.sock"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    environment:
-      - LISTEN=${BESZEL_AGENT_LISTEN}
-      - HUB_URL=${BESZEL_AGENT_HUB_URL}
-      - TOKEN=${BESZEL_AGENT_TOKEN}
-      - KEY=${BESZEL_AGENT_KEY}
-    volumes:
-      - ./beszel_agent_data:/var/lib/beszel-agent
-      - ./beszel_socket:/beszel_socket
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
   glance:
     container_name: glance
     image: glanceapp/glance:latest
