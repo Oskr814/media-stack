@@ -332,28 +332,30 @@ services:
     networks:
       - mynetwork
 
-  glance:
-    container_name: glance
-    image: glanceapp/glance:latest
+  homepage:
+    profiles: ["vpn", "no-vpn"]
+    container_name: homepage
+    image: ghcr.io/gethomepage/homepage:latest
     restart: unless-stopped
     networks:
       - mynetwork
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:8080/api/health >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/ >/dev/null 2>&1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    volumes:
-      - ./config/glance/glance.yml:/app/config/glance.yml
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 8080:8080
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=UTC
+      - HOMEPAGE_ALLOWED_HOSTS=*
+    ports:
+      - 8080:3000
+    volumes:
+      - ./config/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/media:/mnt/media:ro
 
   dozzle:
     container_name: dozzle
