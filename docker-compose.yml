@@ -409,6 +409,22 @@ services:
     deploy:
       mode: global
 
+  code-server:
+    profiles: ["code-server"]
+    container_name: code-server
+    image: lscr.io/linuxserver/code-server:latest
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./config/code-server:/config
+    ports:
+      - 8443:8443
+
   portainer:
     container_name: portainer
     image: portainer/portainer-ce:latest
