@@ -385,6 +385,7 @@ services:
     volumes:
       - ./config/code-server:/config
       - ${HOME}:${HOME}
+      - ${HOME}/.ssh:/home/coder/.ssh
     ports:
       - 8443:8443
 
