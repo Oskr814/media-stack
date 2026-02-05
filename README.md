@@ -9,11 +9,16 @@ This stack includes:
 - **VPN:** For secure and private media downloading
 - **Radarr:** For movie management
 - **Sonarr:** For TV show management
+- **Bazarr:** For subtitle management
 - **Prowlarr:** A torrent indexer manager for Radarr/Sonarr
 - **qBittorrent:** Torrent client for downloading media
+- **FlareSolverr:** Cloudflare proxy for indexers
 - **Jellyseerr:** To manage media requests
 - **Jellyfin:** Open-source media streamer
 - **Recommendarr:** For AI-powered movie and show recommendations
+- **Glance:** Dashboard with service bookmarks and widgets
+- **Beszel:** System monitoring dashboard
+- **Portainer:** Docker container management UI
 
 ## Requirements
 
@@ -130,30 +135,41 @@ COMPOSE_PROFILES=vpn,recommendarr docker compose up -d  # With VPN
 
 - Open qBitTorrent at http://localhost:5080. Default username is `admin`. Temporary password can be collected from container log `docker logs qbittorrent`
 - Go to Tools --> Options --> WebUI --> Change password
-- Run below commands on the server
-
-```bash
-docker exec -it qbittorrent bash # Get inside qBittorrent container
-
-# Above command will get you inside qBittorrent interactive terminal, Run below command in qbt terminal
-mkdir /downloads/movies /downloads/tvshows
-chown 1000:1000 /downloads/movies /downloads/tvshows
-```
+- Configure download paths:
+  - Tools --> Options --> Downloads --> Default Save Path: `/data/torrents`
+  - You may also want to set Category paths for better organization
 
 ## Configure Radarr
 
 - Open Radarr at http://localhost:7878
 - Settings --> Media Management --> Check mark "Movies deleted from disk are automatically unmonitored in Radarr" under File management section --> Save
-- Settings --> Media Management --> Scroll to bottom --> Add Root Folder --> Browse to /downloads/movies --> OK
+- Settings --> Media Management --> Scroll to bottom --> Add Root Folder --> Browse to /data/media/movies --> OK
 - Settings --> Download clients --> qBittorrent --> Add Host (qbittorrent) and port (5080) --> Username and password --> Test --> Save **Note: If VPN is enabled, then qbittorrent is reachable on vpn's service name. In this case use `vpn` in Host field.**
 - Settings --> General --> Enable advance setting --> Select Authentication and add username and password
 - Indexer will get automatically added during configuration of Prowlarr. See 'Configure Prowlarr' section.
 
 Sonarr can also be configured in similar way.
 
+## Configure Bazarr
+
+Bazarr is a companion application to Radarr and Sonarr that manages and downloads subtitles.
+
+- Open Bazarr at http://localhost:6767
+- Settings --> Languages --> Add your preferred languages for subtitles
+- Settings --> Providers --> Add subtitle providers (OpenSubtitles, Subscene, etc.)
+- Settings --> Radarr --> Enable and configure:
+  - Address: http://radarr:7878
+  - API Key: (Get from Radarr Settings --> General)
+  - Test and Save
+- Settings --> Sonarr --> Enable and configure:
+  - Address: http://sonarr:8989
+  - API Key: (Get from Sonarr Settings --> General)
+  - Test and Save
+- Bazarr will now automatically download subtitles for your movies and TV shows
+
 **Add a movie** (After Prowlarr is configured)
 
-- Movies --> Search for a movie --> Add Root folder (/downloads/movies) --> Quality profile --> Add movie
+- Movies --> Search for a movie --> Add Root folder (/data/media/movies) --> Quality profile --> Add movie
 - All queued movies download can be checked here, Activities --> Queue 
 - Go to qBittorrent (http://localhost:5080) and see if movie is getting downloaded (After movie is queued. This depends on availability of movie in indexers configured in Prowlarr.)
 
@@ -161,7 +177,41 @@ Sonarr can also be configured in similar way.
 
 - Open Jellyfin at http://localhost:8096
 - When you access the jellyfin for first time using browser, A guided configuration will guide you to configure jellyfin. Just follow the guide.
-- Add media library folder and choose /data/movies/
+- Add media library folders:
+  - For Movies: /data/media (Jellyfin has this path mapped)
+  - Content type: Movies
+- Repeat for TV Shows if needed
+
+## Configure FlareSolverr
+
+FlareSolverr is a proxy server to bypass Cloudflare protection on indexers. It's automatically configured to work with Prowlarr.
+
+- FlareSolverr runs at http://localhost:8191
+- In Prowlarr, when adding an indexer that requires FlareSolverr:
+  - Go to Settings --> Indexers --> Add Indexer
+  - For indexers with Cloudflare protection, look for FlareSolverr option
+  - Set FlareSolverr URL to: http://flaresolverr:8191
+  - Test and Save
+- No additional configuration needed, it works automatically once linked in Prowlarr
+
+## Service Access URLs
+
+Here's a quick reference for all services in the stack:
+
+| Service | Port | URL | Description |
+|---------|------|-----|-------------|
+| Glance | 8080 | http://localhost:8080 | Dashboard with service bookmarks |
+| Jellyfin | 8096 | http://localhost:8096 | Media streaming server |
+| Radarr | 7878 | http://localhost:7878 | Movie management |
+| Sonarr | 8989 | http://localhost:8989 | TV show management |
+| Bazarr | 6767 | http://localhost:6767 | Subtitle management |
+| Prowlarr | 9696 | http://localhost:9696 | Indexer manager |
+| qBittorrent | 5080 | http://localhost:5080 | Torrent client |
+| Jellyseerr | 5055 | http://localhost:5055 | Media requests |
+| Recommendarr | 3000 | http://localhost:3000 | AI recommendations |
+| FlareSolverr | 8191 | http://localhost:8191 | Cloudflare proxy |
+| Beszel | 8090 | http://localhost:8090 | System monitoring |
+| Portainer | 9000 | http://localhost:9000 | Container management |
 
 ## Configure Jellyseerr
 
@@ -193,6 +243,43 @@ Recommendarr is an AI based movies/tvshows recommendation tool. To use this you 
 - Settings --> Jellyfin --> Jellyfin URL (http://jellyfin:8096) --> API Keys (Jellyfin API Key) --> User ID (Add your jellyfin user id) --> Test Connection --> Save Jellyfin settings
 - Test recommendarr: Recommendations --> Choose LLM Model from drop down list --> Enable Jellyfin Watch History toggle --> Select language --> Choose genres --> Discover recommendations
 - You should be able to see recommendations based on your Jellyfin watch history
+
+## Configure Glance
+
+Glance is a dashboard that provides a unified view of all your services with bookmarks, RSS feeds, calendar, and other widgets.
+
+- Open Glance at http://localhost:8080
+- The dashboard comes pre-configured with two pages:
+  - **Home:** Widgets for calendar, RSS feeds, Hacker News, Reddit, weather, and more
+  - **Services:** Bookmarks to all media stack services organized by category
+- To customize the dashboard, edit `config/glance/glance.yml`
+- Update service URLs in the configuration file if accessing from a different IP or domain
+- Restart the Glance container after making changes: `docker compose restart glance`
+
+## Configure Beszel
+
+Beszel is a lightweight system monitoring dashboard for tracking server metrics and Docker containers.
+
+- Open Beszel at http://localhost:8090
+- On first access, create an admin account
+- The Beszel agent is automatically configured to monitor the host system
+- You can view CPU, memory, disk usage, and Docker container statistics
+- Add additional servers by deploying the Beszel agent on other machines
+
+## Configure Portainer
+
+Portainer is a container management UI that makes it easy to manage Docker containers, images, networks, and volumes.
+
+- Open Portainer at http://localhost:9000
+- On first access, create an admin account (you have 5 minutes to do this)
+- Choose "Get Started" to connect to the local Docker environment
+- You can now manage all your containers through the Portainer UI
+- Features include:
+  - Start/stop/restart containers
+  - View container logs and stats
+  - Manage images, volumes, and networks
+  - Deploy new stacks via docker-compose
+  - Execute commands inside containers
 
 ## Configure Nginx
 
@@ -339,6 +426,70 @@ location / {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Ssl on;
     }
+```
+
+- Restart containers
+
+## Glance Nginx reverse proxy
+
+```
+location /glance/ {
+    proxy_pass http://glance:8080/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+}
+```
+
+## Portainer Nginx reverse proxy
+
+```
+location /portainer/ {
+    proxy_pass http://portainer:9000/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+## Beszel Nginx reverse proxy
+
+```
+location /beszel/ {
+    proxy_pass http://beszel:8090/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+}
+```
+
+## Bazarr Nginx reverse proxy
+
+- Settings --> General --> URL Base --> Add base (/bazarr)
+- Add below proxy in nginx configuration
+
+```
+location /bazarr {
+    proxy_pass http://bazarr:6767;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+}
 ```
 
 - Restart containers
