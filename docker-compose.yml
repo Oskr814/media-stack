@@ -383,6 +383,7 @@ services:
       - TZ=Etc/UTC
     volumes:
       - ./config/code-server:/config
+      - ${HOME}:${HOME}
     ports:
       - 8443:8443
 
