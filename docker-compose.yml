@@ -381,6 +381,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
+      - EXTENSIONS_GALLERY=${EXTENSIONS_GALLERY}
     volumes:
       - ./config/code-server:/config
       - ${HOME}:${HOME}
