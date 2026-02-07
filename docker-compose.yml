@@ -280,6 +280,18 @@ services:
       - 7359:7359/udp
       - 8920:8920
     restart: unless-stopped
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    privileged: true
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=MY_TIME_ZONE
+    volumes:
+      - ./config/home-assistant:/config
+      - /run/dbus:/run/dbus:ro
   
   
   # Doc: https://github.com/navilg/cleanmyarr
