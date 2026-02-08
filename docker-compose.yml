@@ -176,6 +176,19 @@ services:
       - 8686:8686
     restart: unless-stopped
 
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    user: "1000:1000" # should be owner of volumes
+    networks:
+      - mynetwork
+    ports:
+      - "4533:4533"
+    restart: unless-stopped
+    volumes:
+      - "./config/navidrome:/data"
+      - "/mnt/media/data/media/music:/music:ro"
+
   bazarr:
     profiles: ["vpn", "no-vpn"]
     container_name: bazarr
