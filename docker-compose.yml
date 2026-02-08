@@ -475,6 +475,30 @@ services:
     ports:
       - 8082:80
 
+  nginx-proxy-manager:
+    container_name: nginx-proxy-manager
+    image: jc21/nginx-proxy-manager:latest
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./config/nginx/data:/data
+      - ./config/nginx/letsencrypt:/etc/letsencrypt
+
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    command: tunnel run
+
 networks:
   mynetwork:
     external: true
