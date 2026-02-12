@@ -1,4 +1,3 @@
-version: "3.9"
 name: media-stack
 services:
 
@@ -309,6 +308,8 @@ services:
     volumes:
       - ./config/jellyfin:/config
       - /mnt/media/data/media:/data
+    tmpfs:
+      - /config/cache/transcodes:size=2g,uid=1000,gid=1000,mode=1777
     devices:
       - /dev/dri:/dev/dri
     ports:
