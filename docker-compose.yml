@@ -309,9 +309,11 @@ services:
       - ./config/jellyfin:/config
       - /mnt/media/data/media:/data
     tmpfs:
-      - /config/cache/transcodes:size=2g,uid=1000,gid=1000,mode=1777
+      - /transcode:size=8G,mode=1777,uid=1000,gid=1000
     devices:
       - /dev/dri:/dev/dri
+    group_add:
+      - "993"
     ports:
       - 8096:8096
       - 7359:7359/udp
