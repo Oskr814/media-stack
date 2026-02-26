@@ -507,6 +507,18 @@ services:
       - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
     command: tunnel run
 
+  czkawka:
+    container_name: czkawka
+    image: jlesage/czkawka:latest
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    volumes:
+      - ./config/czkawka:/config:rw
+      - /mnt/media/data/media:/storage:rw
+    ports:
+      - 5800:5800
+
 networks:
   mynetwork:
     external: true
