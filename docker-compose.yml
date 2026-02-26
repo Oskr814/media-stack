@@ -91,7 +91,7 @@ services:
       - WEBUI_PORT=5080
     volumes:
       - ./config/qbittorrent:/config
-      - /mnt/media/data:/data
+      - /mnt/media/data/media/downloads:/data/downloads
 
     ## Comment/Disable below ports if VPN is enabled
     ports:
@@ -123,7 +123,8 @@ services:
       - 7878:7878
     volumes:
       - ./config/radarr:/config
-      - /mnt/media/data:/data
+      - /mnt/media/data/media/downloads:/data/downloads
+      - /mnt/media/data/media/movies:/data/movies
     restart: "unless-stopped"
 
   sonarr:
@@ -147,7 +148,8 @@ services:
       - TZ=UTC
     volumes:
       - ./config/sonarr:/config
-      - /mnt/media/data:/data
+      - /mnt/media/data/media/downloads:/data/downloads
+      - /mnt/media/data/media/tvshows:/data/tvshows
     ports:
       - 8989:8989
     restart: unless-stopped
@@ -170,7 +172,8 @@ services:
       - TZ=UTC
     volumes:
       - ./config/lidarr:/config
-      - /mnt/media/data:/data
+      - /mnt/media/data/media/downloads:/data/downloads
+      - /mnt/media/data/media/music:/data/music
     ports:
       - 8686:8686
     restart: unless-stopped
@@ -204,7 +207,9 @@ services:
       - TZ=UTC
     volumes:
       - ./config/bazarr:/config
-      - /mnt/media/data:/downloads
+      - /mnt/media/data/media/downloads:/data/downloads
+      - /mnt/media/data/media/movies:/data/movies
+      - /mnt/media/data/media/tvshows:/data/tvshows
     ports:
       - 6767:6767
     restart: unless-stopped
